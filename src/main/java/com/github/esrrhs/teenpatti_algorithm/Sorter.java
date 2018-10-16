@@ -139,7 +139,7 @@ public class Sorter
 			int i = lowerIndex;
 			int j = higherIndex;
 			// calculate pivot number, I am taking pivot as middle index number
-			long pivot = values.get(lowerIndex + (higherIndex - lowerIndex) / 2);
+			int pivot = values.get(lowerIndex + (higherIndex - lowerIndex) / 2);
 			// Divide into two arrays
 
 			int totalStep = j - i;

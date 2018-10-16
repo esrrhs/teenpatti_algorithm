@@ -1,8 +1,10 @@
 package com.github.esrrhs.teenpatti_algorithm;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -39,19 +41,15 @@ public class TeenPattiAlgorithmUtil
 
 	private static void gen()
 	{
-		File file = new File("texas_data.txt");
-		if (!file.exists())
-		{
-			GenUtil.genKey();
-			GenUtil.outputData();
-		}
+		GenUtil.genKey();
+		GenUtil.outputData();
 	}
 
 	public static void load()
 	{
 		try
 		{
-			FileInputStream inputStream = new FileInputStream("teenpatti_algorithm_data.txt");
+			FileInputStream inputStream = new FileInputStream("teenpatti_data.txt");
 			loadNormal(inputStream);
 			inputStream.close();
 		}
