@@ -96,19 +96,12 @@ public class GenUtil
 		return ret;
 	}
 
-	public static int genCardBind(List tmp)
+	public static int genCardBind(List<Byte> tmp)
 	{
 		int ret = 0;
-		for (Object i : tmp)
+		for (Byte i : tmp)
 		{
-			if (i instanceof Integer)
-			{
-				ret = ret * 100 + ((Integer) i);
-			}
-			else if (i instanceof Byte)
-			{
-				ret = ret * 100 + ((Byte) i);
-			}
+			ret = ret * 100 + i;
 		}
 		return ret;
 	}
@@ -118,7 +111,7 @@ public class GenUtil
 		long begin = System.currentTimeMillis();
 		try
 		{
-			File file = new File("texas_data.txt");
+			File file = new File("teenpatti_data.txt");
 			if (file.exists())
 			{
 				file.delete();

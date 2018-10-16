@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -69,7 +70,7 @@ public class TeenPattiAlgorithmUtil
 			String[] params = str.split(" ");
 			int key = Integer.parseInt(params[0]);
 			int i = Integer.parseInt(params[1]);
-			int type = Integer.parseInt(params[2]);
+			int type = Integer.parseInt(params[5]);
 
 			KeyData keyData = new KeyData(i, type);
 			normalMap.put(key, keyData);
@@ -197,6 +198,7 @@ public class TeenPattiAlgorithmUtil
 
 	public static KeyData getKeyData(List<Byte> pokes)
 	{
+		Collections.sort(pokes);
 		int key = GenUtil.genCardBind(pokes);
 
 		return getKeyData(key);
@@ -239,6 +241,8 @@ public class TeenPattiAlgorithmUtil
 
 	public static int compare(List<Byte> bytes1, List<Byte> bytes2)
 	{
+		Collections.sort(bytes1);
+		Collections.sort(bytes2);
 		return compare(GenUtil.genCardBind(bytes1), GenUtil.genCardBind(bytes2));
 	}
 
