@@ -35,3 +35,7 @@ int win = TeenPattiAlgorithmUtil.getWinPosition("黑2,黑3,黑4");
 
 #### 结果输出
 数组已经排好序，现在按照顺序输出到一个文件，内容有key、大小顺序、可阅读的牌面信息。
+
+## 其他
+<a href="https://github.com/esrrhs/majiang_algorithm">麻将算法</a>
+<a href="https://github.com/esrrhs/texas_algorithm">德州算法</a>
