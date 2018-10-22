@@ -1,5 +1,5 @@
 # 印度炸金花TeenPatti算法
-用于印度炸金花TeenPatti的算法，通过牌查表获得牌型和大小。算法由texas_algorithm修改得来。
+用于印度炸金花TeenPatti的带鬼牌的算法，通过牌查表获得牌型和大小。算法由texas_algorithm修改得来。
 
 ## 使用
 ``` xml
@@ -11,7 +11,7 @@
 ```
 ``` java
 // 获取3张手牌的牌型
-TeenPattiAlgorithmUtil.getWinType("黑2,黑3,黑4");
+TeenPattiAlgorithmUtil.getWinType("黑2,黑3,鬼");
 // 获取3张牌的大小，用于比牌
 int win = TeenPattiAlgorithmUtil.getWinPosition("黑2,黑3,黑4");
 ```
