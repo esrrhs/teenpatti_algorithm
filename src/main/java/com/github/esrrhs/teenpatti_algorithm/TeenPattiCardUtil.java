@@ -1,9 +1,6 @@
 package com.github.esrrhs.teenpatti_algorithm;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 public class TeenPattiCardUtil
 {
@@ -94,13 +91,101 @@ public class TeenPattiCardUtil
 		return ret;
 	}
 
+	public static ArrayList<Poke> maxCards(ArrayList<Poke> cards)
+	{
+		ArrayList<Poke> ret = new ArrayList<>();
+
+		int gui = 0;
+		for (Poke poke : cards)
+		{
+			if (poke.isGui())
+			{
+				gui++;
+			}
+		}
+
+		if (gui == 0)
+		{
+			ret.addAll(cards);
+			return ret;
+		}
+
+		ArrayList<Poke> left = new ArrayList<>();
+		HashSet<Integer> leftMap = new HashSet<>();
+		for (Poke poke : cards)
+		{
+			if (!poke.isGui())
+			{
+				left.add(poke);
+				leftMap.add((int) poke.toByte());
+			}
+		}
+
+		int[] tmp = new int[gui];
+		GenUtil.PermutationRun permutationRun = new GenUtil.PermutationRun() {
+			@Override
+			public void run(int[] tmp, GenUtil.PermutationParam permutationParam) throws Exception
+			{
+				for (int t : tmp)
+				{
+					if (leftMap.contains(t) || t == Poke.GUI.toByte())
+					{
+						return;
+					}
+				}
+
+				ArrayList<Poke> last = new ArrayList<>();
+				last.addAll(left);
+				for (int t : tmp)
+				{
+					last.add(new Poke((byte) t));
+				}
+				ArrayList<Poke> max = (ArrayList<Poke>) permutationParam.o1;
+				if (max.isEmpty())
+				{
+					max.clear();
+					max.addAll(last);
+				}
+				else
+				{
+					if (compareCardsWithoutGui(last, max) > 0)
+					{
+						max.clear();
+						max.addAll(last);
+					}
+				}
+			}
+		};
+		GenUtil.PermutationParam permutationParam = new GenUtil.PermutationParam();
+		permutationParam.o1 = new ArrayList<Poke>();
+		try
+		{
+			GenUtil.permutation(permutationRun, GenUtil.allCards, 0, 0, gui, tmp, permutationParam);
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+
+		ArrayList<Poke> max = (ArrayList<Poke>) permutationParam.o1;
+		return max;
+	}
+
+	public static int compareCards(ArrayList<Poke> firstCards, ArrayList<Poke> secondCards)
+	{
+		ArrayList<Poke> f = maxCards(firstCards);
+		ArrayList<Poke> s = maxCards(secondCards);
+
+		return compareCardsWithoutGui(f, s);
+	}
+
 	/**
 	 * 比较两副牌大小
 	 * @param firstCards
 	 * @param secondCards
 	 * @return 1:赢 0:平 -1:输
 	 */
-	public static int compareCards(ArrayList<Poke> firstCards, ArrayList<Poke> secondCards)
+	public static int compareCardsWithoutGui(ArrayList<Poke> firstCards, ArrayList<Poke> secondCards)
 	{
 		int firstCardType = getCardTypeUnordered(firstCards);
 		int secondCardType = getCardTypeUnordered(secondCards);
@@ -201,24 +286,4 @@ public class TeenPattiCardUtil
 		return 0;
 	}
 
-	public static void main(String[] args)
-	{
-		Poke poke1 = new Poke((byte) 2, (byte) 2);
-		Poke poke2 = new Poke((byte) 3, (byte) 2);
-		Poke poke3 = new Poke((byte) 2, (byte) 14);
-		ArrayList<Poke> cards1 = new ArrayList<>();
-		cards1.add(poke1);
-		cards1.add(poke2);
-		cards1.add(poke3);
-		ArrayList<Poke> cards2 = new ArrayList<>();
-		poke1 = new Poke((byte) 2, (byte) 13);
-		poke2 = new Poke((byte) 3, (byte) 13);
-		poke3 = new Poke((byte) 2, (byte) 2);
-		cards2.add(poke1);
-		cards2.add(poke2);
-		cards2.add(poke3);
-		System.out.println(getCardTypeUnordered(cards1));
-		System.out.println(getCardTypeUnordered(cards2));
-		System.out.println(compareCards(cards1, cards2));
-	}
 }

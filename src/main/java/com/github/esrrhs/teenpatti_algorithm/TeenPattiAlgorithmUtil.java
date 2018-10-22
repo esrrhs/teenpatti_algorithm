@@ -120,6 +120,10 @@ public class TeenPattiAlgorithmUtil
 		{
 			return (new Poke(Poke.PokeColor_HEI, strToPokeValue(str.substring(1)))).toByte();
 		}
+		else if (str.startsWith("鬼"))
+		{
+			return (new Poke(Poke.GUI.color, Poke.GUI.value)).toByte();
+		}
 		else
 		{
 			return 0;

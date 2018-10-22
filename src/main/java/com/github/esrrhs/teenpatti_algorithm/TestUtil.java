@@ -6,7 +6,7 @@ public class TestUtil
 	{
 		TeenPattiAlgorithmUtil.load();
 		String cards = "黑A,方A,黑4";
-		String cards1 = "黑A,方A,方3";
+		String cards1 = "黑A,鬼,方3";
 		System.out.println(TeenPattiAlgorithmUtil.getWinPosition(cards));
 		System.out.println(TeenPattiAlgorithmUtil.getWinType(cards));
 
