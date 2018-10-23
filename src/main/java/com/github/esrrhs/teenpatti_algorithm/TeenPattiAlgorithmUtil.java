@@ -13,14 +13,16 @@ public class TeenPattiAlgorithmUtil
 {
 	public static class KeyData
 	{
-		public KeyData(int postion, int type)
+		public KeyData(int postion, int type, int max)
 		{
 			this.postion = postion;
 			this.type = type;
+			this.max = max;
 		}
 
 		private int postion;
 		private int type;
+		private int max;
 
 		public int getPostion()
 		{
@@ -30,6 +32,11 @@ public class TeenPattiAlgorithmUtil
 		public int getType()
 		{
 			return type;
+		}
+
+		public int getMax()
+		{
+			return max;
 		}
 	}
 
@@ -71,8 +78,9 @@ public class TeenPattiAlgorithmUtil
 			int key = Integer.parseInt(params[0]);
 			int i = Integer.parseInt(params[1]);
 			int type = Integer.parseInt(params[5]);
+			int max = Integer.parseInt(params[6]);
 
-			KeyData keyData = new KeyData(i, type);
+			KeyData keyData = new KeyData(i, type, max);
 			normalMap.put(key, keyData);
 		}
 		bufferedReader.close();
@@ -236,6 +244,21 @@ public class TeenPattiAlgorithmUtil
 			return 0;
 		}
 		return keyData.getType();
+	}
+
+	public static int getMax(String str)
+	{
+		return getMax(strToPokes(str));
+	}
+
+	public static int getMax(List<Byte> pokes)
+	{
+		KeyData keyData = getKeyData(pokes);
+		if (keyData == null)
+		{
+			return 0;
+		}
+		return keyData.getMax();
 	}
 
 	public static int compare(String str1, String str2)
