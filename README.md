@@ -1,5 +1,7 @@
 # TeenPatti Algorithm
 
+[中文文档](README_CN.md)
+
 A high-performance lookup-table algorithm for the Indian card game **Teen Patti**, with full support for **Joker (wild card)**. Given any 3-card hand, the library instantly returns the hand's rank, type, and best possible combination.
 
 Derived from [texas_algorithm](https://github.com/esrrhs/texas_algorithm).
