@@ -50,7 +50,7 @@ public class Sorter
 	 *
 	 * @param <T> The type of the objects being sorted, must extend Comparable.
 	 */
-	private static class QuicksortRunnable<T extends Comparable<T>> implements Runnable
+	private static class QuicksortRunnable implements Runnable
 	{
 		/**
 		 * The array being sorted.
@@ -209,18 +209,18 @@ public class Sorter
 				if (i - j == 1)
 				{
 					count.getAndAdd(1);
-					pool.execute(new QuicksortRunnable<T>(values, lowerIndex, j, count, layer + 1, total));
+					pool.execute(new QuicksortRunnable(values, lowerIndex, j, count, layer + 1, total));
 
 					count.getAndAdd(1);
-					pool.execute(new QuicksortRunnable<T>(values, i, higherIndex, count, layer + 1, total));
+					pool.execute(new QuicksortRunnable(values, i, higherIndex, count, layer + 1, total));
 				}
 				else
 				{
 					count.getAndAdd(1);
-					pool.execute(new QuicksortRunnable<T>(values, lowerIndex, j + 1, count, layer + 1, total));
+					pool.execute(new QuicksortRunnable(values, lowerIndex, j + 1, count, layer + 1, total));
 
 					count.getAndAdd(1);
-					pool.execute(new QuicksortRunnable<T>(values, i, higherIndex, count, layer + 1, total));
+					pool.execute(new QuicksortRunnable(values, i, higherIndex, count, layer + 1, total));
 				}
 			}
 		}

@@ -24,7 +24,16 @@ public class TeenPattiAlgorithmUtil
 		private int type;
 		private int max;
 
+		/**
+		 * @deprecated Use {@link #getPosition()} instead.
+		 */
+		@Deprecated
 		public int getPostion()
+		{
+			return postion;
+		}
+
+		public int getPosition()
 		{
 			return postion;
 		}
@@ -57,9 +66,25 @@ public class TeenPattiAlgorithmUtil
 	{
 		try
 		{
-			FileInputStream inputStream = new FileInputStream("teenpatti_data.txt");
-			loadNormal(inputStream);
-			inputStream.close();
+			InputStream inputStream = TeenPattiAlgorithmUtil.class.getClassLoader() != null
+					? TeenPattiAlgorithmUtil.class.getClassLoader().getResourceAsStream("teenpatti_data.txt")
+					: null;
+			if (inputStream == null)
+			{
+				inputStream = TeenPattiAlgorithmUtil.class.getResourceAsStream("/teenpatti_data.txt");
+			}
+			if (inputStream == null)
+			{
+				inputStream = new FileInputStream("teenpatti_data.txt");
+			}
+			try
+			{
+				loadNormal(inputStream);
+			}
+			finally
+			{
+				inputStream.close();
+			}
 		}
 		catch (Exception e)
 		{
@@ -69,21 +94,21 @@ public class TeenPattiAlgorithmUtil
 
 	public static void loadNormal(InputStream inputStream) throws Exception
 	{
-		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-
-		String str = null;
-		while ((str = bufferedReader.readLine()) != null)
+		try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream)))
 		{
-			String[] params = str.split(" ");
-			int key = Integer.parseInt(params[0]);
-			int i = Integer.parseInt(params[1]);
-			int type = Integer.parseInt(params[5]);
-			int max = Integer.parseInt(params[6]);
+			String str = null;
+			while ((str = bufferedReader.readLine()) != null)
+			{
+				String[] params = str.split(" ");
+				int key = Integer.parseInt(params[0]);
+				int i = Integer.parseInt(params[1]);
+				int type = Integer.parseInt(params[5]);
+				int max = Integer.parseInt(params[6]);
 
-			KeyData keyData = new KeyData(i, type, max);
-			normalMap.put(key, keyData);
+				KeyData keyData = new KeyData(i, type, max);
+				normalMap.put(key, keyData);
+			}
 		}
-		bufferedReader.close();
 	}
 
 	public static byte strToPokeValue(String str)
@@ -228,7 +253,7 @@ public class TeenPattiAlgorithmUtil
 		{
 			return 0;
 		}
-		return keyData.getPostion();
+		return keyData.getPosition();
 	}
 
 	public static int getWinType(String str)
@@ -289,6 +314,6 @@ public class TeenPattiAlgorithmUtil
 		{
 			return 1;
 		}
-		return keyData1.getPostion() - keyData2.getPostion();
+		return keyData1.getPosition() - keyData2.getPosition();
 	}
 }

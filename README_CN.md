@@ -81,7 +81,7 @@ String maxStr = TeenPattiAlgorithmUtil.keyToStr(maxKey);  // 例如 "黑A方A红
 
 | 字段 | Getter | 说明 |
 |------|--------|------|
-| `position` | `getPostion()` | 在所有可能手牌中的全局排名 |
+| `position` | `getPosition()` / `getPostion()` | 在所有可能手牌中的全局排名 |
 | `type` | `getType()` | 牌型（1–6，见牌型大小） |
 | `max` | `getMax()` | 鬼牌展开后最优组合的编码 key |
 

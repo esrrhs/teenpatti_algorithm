@@ -83,7 +83,7 @@ All public methods are on `TeenPattiAlgorithmUtil`.
 
 | Field | Getter | Description |
 |-------|--------|-------------|
-| `position` | `getPostion()` | Global rank index among all possible hands |
+| `position` | `getPosition()` / `getPostion()` | Global rank index among all possible hands |
 | `type` | `getType()` | Hand type (1–6, see Hand Rankings) |
 | `max` | `getMax()` | Encoded key of best resolved hand |
 
