@@ -1,5 +1,10 @@
 # TeenPatti Algorithm
 
+[<img src="https://img.shields.io/github/license/esrrhs/teenpatti_algorithm">](https://github.com/esrrhs/teenpatti_algorithm)
+[<img src="https://img.shields.io/github/languages/top/esrrhs/teenpatti_algorithm">](https://github.com/esrrhs/teenpatti_algorithm)
+[<img src="https://img.shields.io/maven-central/v/com.github.esrrhs/teenpatti_algorithm">](https://central.sonatype.com/artifact/com.github.esrrhs/teenpatti_algorithm)
+[<img src="https://img.shields.io/github/actions/workflow/status/esrrhs/teenpatti_algorithm/maven.yml?branch=master">](https://github.com/esrrhs/teenpatti_algorithm/actions)
+
 [中文文档](README_CN.md)
 
 A high-performance lookup-table algorithm for the Indian card game **Teen Patti**, with full support for **Joker (wild card)**. Given any 3-card hand, the library instantly returns the hand's rank, type, and best possible combination.

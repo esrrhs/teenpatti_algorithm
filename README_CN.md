@@ -1,5 +1,10 @@
 # 印度炸金花 TeenPatti 算法
 
+[<img src="https://img.shields.io/github/license/esrrhs/teenpatti_algorithm">](https://github.com/esrrhs/teenpatti_algorithm)
+[<img src="https://img.shields.io/github/languages/top/esrrhs/teenpatti_algorithm">](https://github.com/esrrhs/teenpatti_algorithm)
+[<img src="https://img.shields.io/maven-central/v/com.github.esrrhs/teenpatti_algorithm">](https://central.sonatype.com/artifact/com.github.esrrhs/teenpatti_algorithm)
+[<img src="https://img.shields.io/github/actions/workflow/status/esrrhs/teenpatti_algorithm/maven.yml?branch=master">](https://github.com/esrrhs/teenpatti_algorithm/actions)
+
 基于**查表法**的高性能印度炸金花算法，完整支持**鬼牌（万能牌）**。给定任意3张手牌，库可立即返回牌型、强度排名以及鬼牌展开后的最优组合。
 
 算法由 [texas_algorithm](https://github.com/esrrhs/texas_algorithm) 修改而来。
