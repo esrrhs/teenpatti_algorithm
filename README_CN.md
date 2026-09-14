@@ -230,3 +230,9 @@ System.out.println(TeenPattiAlgorithmUtil.compare(cards, cards1));  // > 0: card
 
 - [majiang_algorithm](https://github.com/esrrhs/majiang_algorithm) — 麻将算法
 - [texas_algorithm](https://github.com/esrrhs/texas_algorithm) — 德州扑克算法
+
+---
+
+## 许可证
+
+本项目基于 [MIT 许可证](LICENSE) 开源。

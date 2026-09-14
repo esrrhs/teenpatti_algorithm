@@ -232,3 +232,9 @@ System.out.println(TeenPattiAlgorithmUtil.compare(cards, cards1));  // > 0: card
 
 - [majiang_algorithm](https://github.com/esrrhs/majiang_algorithm) — Mahjong algorithm
 - [texas_algorithm](https://github.com/esrrhs/texas_algorithm) — Texas Hold'em algorithm
+
+---
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
