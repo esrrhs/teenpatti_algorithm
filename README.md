@@ -36,7 +36,7 @@ Teen Patti is played with a standard 52-card deck plus **3 Jokers** (55 cards to
 <dependency>
     <groupId>com.github.esrrhs</groupId>
     <artifactId>teenpatti_algorithm</artifactId>
-    <version>1.0.2</version>
+    <version>1.0.3</version>
 </dependency>
 ```
 

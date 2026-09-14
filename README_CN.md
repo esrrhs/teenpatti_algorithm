@@ -34,7 +34,7 @@ TeenPatti 使用标准52张牌加上**3张鬼牌**（共55张）。每位玩家�
 <dependency>
     <groupId>com.github.esrrhs</groupId>
     <artifactId>teenpatti_algorithm</artifactId>
-    <version>1.0.2</version>
+    <version>1.0.3</version>
 </dependency>
 ```
 
