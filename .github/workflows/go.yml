@@ -1,0 +1,39 @@
+name: Go CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go: [ '1.21', '1.24', 'stable' ]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Go ${{ matrix.go }}
+      uses: actions/setup-go@v5
+      with:
+        go-version: ${{ matrix.go }}
+
+    - name: Check formatting
+      working-directory: go
+      run: test -z "$(gofmt -l .)"
+
+    - name: Build
+      working-directory: go
+      run: go build -v ./...
+
+    - name: Vet
+      working-directory: go
+      run: go vet ./...
+
+    - name: Test
+      working-directory: go
+      run: go test -race -v ./...

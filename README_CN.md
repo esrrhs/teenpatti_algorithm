@@ -4,10 +4,24 @@
 [<img src="https://img.shields.io/github/languages/top/esrrhs/teenpatti_algorithm">](https://github.com/esrrhs/teenpatti_algorithm)
 [<img src="https://img.shields.io/maven-central/v/com.github.esrrhs/teenpatti_algorithm">](https://central.sonatype.com/artifact/com.github.esrrhs/teenpatti_algorithm)
 [<img src="https://img.shields.io/github/actions/workflow/status/esrrhs/teenpatti_algorithm/maven.yml?branch=master">](https://github.com/esrrhs/teenpatti_algorithm/actions)
+[<img src="https://img.shields.io/github/actions/workflow/status/esrrhs/teenpatti_algorithm/go.yml?branch=master">](https://github.com/esrrhs/teenpatti_algorithm/actions)
 
-基于**查表法**的高性能印度炸金花算法，完整支持**鬼牌（万能牌）**。给定任意3张手牌，库可立即返回牌型、强度排名以及鬼牌展开后的最优组合。
+基于**查表法**的高性能印度炸金花算法，完整支持**鬼牌（万能牌）**。给定任意3张手牌，库可立即返回牌型、强度排名以及鬼牌展开后的最优组合。提供 **Java** 和 **Go** 两个实现，行为完全一致。
 
 算法由 [texas_algorithm](https://github.com/esrrhs/texas_algorithm) 修改而来。
+
+---
+
+## 目录结构
+
+```
+teenpatti_algorithm/
+├── java/     # Java 实现（发布到 Maven Central）
+├── go/       # Go 实现（go:embed 内嵌查表数据，与 Java 生成的数据字节级一致）
+└── .github/  # CI：Java CI（maven.yml）、Go CI（go.yml）、发布（publish.yml）
+```
+
+两个实现共用同一份 `teenpatti_data.txt` 查表数据，并通过同一套单元测试；Go 的生成流水线可逐字节复现该数据文件。
 
 ---
 
@@ -64,6 +78,47 @@ int maxKey = TeenPattiAlgorithmUtil.getMax("黑A,方A,鬼");
 String maxStr = TeenPattiAlgorithmUtil.keyToStr(maxKey);  // 例如 "黑A方A红A"
 ```
 
+### Go 模块
+
+```bash
+go get github.com/esrrhs/teenpatti_algorithm/go
+```
+
+### 基本用法（Go）
+
+```go
+package main
+
+import (
+	"fmt"
+
+	teenpatti "github.com/esrrhs/teenpatti_algorithm/go"
+)
+
+func main() {
+	// 1. 启动时加载一次内嵌的查表数据
+	if err := teenpatti.Load(); err != nil {
+		panic(err)
+	}
+
+	// 2. 获取牌型（返回 CardType 常量，见"牌型大小"章节）
+	typ := teenpatti.GetWinType("黑A,方A,鬼")
+	// typ == 6  → 三条（鬼牌充当第三张A）
+
+	// 3. 获取排名（数值越大越强）
+	position := teenpatti.GetWinPosition("黑2,黑3,黑4")
+
+	// 4. 比较两副牌（正数=第一副赢，负数=第二副赢，0=平局）
+	result := teenpatti.Compare("黑A,方A,鬼", "黑A,鬼,方3")
+
+	// 5. 获取鬼牌展开后的最优组合
+	maxKey := teenpatti.GetMax("黑A,方A,鬼")
+	maxStr := teenpatti.KeyToStr(maxKey)
+
+	fmt.Println(typ, position, result, maxKey, maxStr)
+}
+```
+
 ---
 
 ## API 说明
@@ -89,6 +144,22 @@ String maxStr = TeenPattiAlgorithmUtil.keyToStr(maxKey);  // 例如 "黑A方A红
 | `position` | `getPosition()` / `getPostion()` | 在所有可能手牌中的全局排名 |
 | `type` | `getType()` | 牌型（1–6，见牌型大小） |
 | `max` | `getMax()` | 鬼牌展开后最优组合的编码 key |
+
+### Go API
+
+所有函数位于 `teenpatti` 包（`github.com/esrrhs/teenpatti_algorithm/go`）。
+
+| 函数 | 参数 | 返回值 | 说明 |
+|------|------|--------|------|
+| `Load()` | 无 | `error` | 加载内嵌的 `teenpatti_data.txt`（启动时调用一次） |
+| `LoadFromFile(path)` | 文件路径 | `error` | 从自定义文件加载查表数据 |
+| `GetWinType(string)` | 逗号分隔的牌面字符串 | `int` | 牌型常量（见牌型大小） |
+| `GetWinPosition(string)` | 逗号分隔的牌面字符串 | `int` | 全局排名（数值越大越强） |
+| `GetMax(string)` | 逗号分隔的牌面字符串 | `int` | 最优组合的编码 key |
+| `Compare(a, b string)` | 两副牌 | `int` | 正/零/负比较结果 |
+| `KeyToStr(int)` | 编码 key | `string` | 可读牌面字符串 |
+
+另有 `...ByCards` 系列函数（`GetWinTypeByCards`、`GetWinPositionByCards`、`GetMaxByCards`、`CompareByCards`）接受解析好的 `[]byte` 牌面切片；`GetKeyDataByCards` / `GetKeyDataByKey` 返回带 `Position`、`Type`、`Max` 字段的 `*KeyData`。`CompareCards` / `MaxCards` / `GetCardTypeUnordered` 直接操作 `[]Poke`，对应 Java 的 `TeenPattiCardUtil`。
 
 ---
 
@@ -172,7 +243,7 @@ key = 牌1字节 * 10000 + 牌2字节 * 100 + 牌3字节
 
 ### 第三步 — 多线程快速排序
 
-所有组合 key 按牌力大小进行**并行快速排序**（`Sorter.java`），线程池大小等于 CPU 核心数。当活跃线程数超过 `2 × CPU核心数` 时，子分区退回单线程递归，防止线程爆炸。
+所有组合 key 按牌力大小进行**并行快速排序**（`Sorter.java` / `sorter.go`），线程池大小等于 CPU 核心数。当活跃线程数超过 `2 × CPU核心数` 时，子分区退回单线程递归，防止线程爆炸。
 
 比较函数（`GenUtil.compare`）在比较前先将鬼牌展开为最优替代牌，确保排序结果反映真实游戏结果。
 
@@ -199,10 +270,14 @@ key = 牌1字节 * 10000 + 牌2字节 * 100 + 牌3字节
 运行 `TeenPattiAlgorithmUtil.main()`（或依次调用 `GenUtil.genKey()` 和 `GenUtil.outputData()`）可重新生成 `teenpatti_data.txt`。仅在修改牌组或排名规则时需要执行。
 
 ```bash
-mvn exec:java -Dexec.mainClass="com.github.esrrhs.teenpatti_algorithm.TeenPattiAlgorithmUtil"
+# Java
+cd java && mvn exec:java -Dexec.mainClass="com.github.esrrhs.teenpatti_algorithm.TeenPattiAlgorithmUtil"
+
+# Go（在当前工作目录生成 teenpatti_data.txt）
+cd go && go run ./cmd/teenpatti_gen
 ```
 
-生成过程会输出进度、预计剩余时间和处理速度（条/秒）。
+生成过程会输出进度、预计剩余时间和处理速度（条/秒）。Go 实现可逐字节复现 Java 生成的数据文件。
 
 ---
 

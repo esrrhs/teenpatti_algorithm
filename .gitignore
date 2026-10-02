@@ -26,3 +26,8 @@ hs_err_pid*
 # OS metadata
 .DS_Store
 Thumbs.db
+
+# Go
+*.test
+*.out
+go/teenpatti_gen

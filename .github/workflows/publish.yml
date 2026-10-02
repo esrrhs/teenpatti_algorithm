@@ -3,7 +3,7 @@ name: Publish to Maven Central
 on:
   push:
     paths:
-      - 'pom.xml'
+      - 'java/pom.xml'
     branches:
       - master
   workflow_dispatch:
@@ -27,11 +27,12 @@ jobs:
 
     - name: Check version change
       id: check_version
+      working-directory: java
       run: |
         CUR_VER=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
         echo "Current version: $CUR_VER"
         echo "current_version=$CUR_VER" >> $GITHUB_OUTPUT
-        
+
         # If manually triggered or HEAD^ does not exist, proceed
         if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
           echo "Triggered manually. Proceeding to publish."
@@ -91,6 +92,7 @@ jobs:
 
     - name: Publish to Central Repository via Sonatype Portal
       if: steps.check_version.outputs.should_publish == 'true'
+      working-directory: java
       env:
         MAVEN_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
         MAVEN_PASSWORD: ${{ secrets.CENTRAL_TOKEN }}

@@ -4,12 +4,26 @@
 [<img src="https://img.shields.io/github/languages/top/esrrhs/teenpatti_algorithm">](https://github.com/esrrhs/teenpatti_algorithm)
 [<img src="https://img.shields.io/maven-central/v/com.github.esrrhs/teenpatti_algorithm">](https://central.sonatype.com/artifact/com.github.esrrhs/teenpatti_algorithm)
 [<img src="https://img.shields.io/github/actions/workflow/status/esrrhs/teenpatti_algorithm/maven.yml?branch=master">](https://github.com/esrrhs/teenpatti_algorithm/actions)
+[<img src="https://img.shields.io/github/actions/workflow/status/esrrhs/teenpatti_algorithm/go.yml?branch=master">](https://github.com/esrrhs/teenpatti_algorithm/actions)
 
 [中文文档](README_CN.md)
 
-A high-performance lookup-table algorithm for the Indian card game **Teen Patti**, with full support for **Joker (wild card)**. Given any 3-card hand, the library instantly returns the hand's rank, type, and best possible combination.
+A high-performance lookup-table algorithm for the Indian card game **Teen Patti**, with full support for **Joker (wild card)**. Given any 3-card hand, the library instantly returns the hand's rank, type, and best possible combination. Available for **Java** and **Go**, with identical behavior.
 
 Derived from [texas_algorithm](https://github.com/esrrhs/texas_algorithm).
+
+---
+
+## Project Structure
+
+```
+teenpatti_algorithm/
+├── java/     # Java implementation (published to Maven Central)
+├── go/       # Go implementation (go:embed based, byte-identical lookup table)
+└── .github/  # CI: Java CI (maven.yml), Go CI (go.yml), publishing (publish.yml)
+```
+
+Both implementations share the same `teenpatti_data.txt` lookup table and pass the same set of unit tests; the Go generation pipeline reproduces the table byte-for-byte.
 
 ---
 
@@ -66,6 +80,47 @@ int maxKey = TeenPattiAlgorithmUtil.getMax("黑A,方A,鬼");
 String maxStr = TeenPattiAlgorithmUtil.keyToStr(maxKey);  // e.g. "黑A方A红A"
 ```
 
+### Go module
+
+```bash
+go get github.com/esrrhs/teenpatti_algorithm/go
+```
+
+### Basic usage (Go)
+
+```go
+package main
+
+import (
+	"fmt"
+
+	teenpatti "github.com/esrrhs/teenpatti_algorithm/go"
+)
+
+func main() {
+	// 1. Load the embedded lookup table once at startup
+	if err := teenpatti.Load(); err != nil {
+		panic(err)
+	}
+
+	// 2. Get the hand type (returns a CardType constant, see Hand Rankings)
+	typ := teenpatti.GetWinType("黑A,方A,鬼")
+	// typ == 6  → Three of a Kind (Joker acts as a third Ace)
+
+	// 3. Get the rank position (higher = stronger hand)
+	position := teenpatti.GetWinPosition("黑2,黑3,黑4")
+
+	// 4. Compare two hands (positive = first hand wins, negative = second wins, 0 = tie)
+	result := teenpatti.Compare("黑A,方A,鬼", "黑A,鬼,方3")
+
+	// 5. Get the best resolved hand (Joker expanded to its optimal card)
+	maxKey := teenpatti.GetMax("黑A,方A,鬼")
+	maxStr := teenpatti.KeyToStr(maxKey)
+
+	fmt.Println(typ, position, result, maxKey, maxStr)
+}
+```
+
 ---
 
 ## API Reference
@@ -91,6 +146,22 @@ All public methods are on `TeenPattiAlgorithmUtil`.
 | `position` | `getPosition()` / `getPostion()` | Global rank index among all possible hands |
 | `type` | `getType()` | Hand type (1–6, see Hand Rankings) |
 | `max` | `getMax()` | Encoded key of best resolved hand |
+
+### Go API
+
+All functions live in package `teenpatti` (`github.com/esrrhs/teenpatti_algorithm/go`).
+
+| Function | Parameters | Return | Description |
+|----------|-----------|--------|-------------|
+| `Load()` | — | `error` | Load the embedded `teenpatti_data.txt` (call once at startup) |
+| `LoadFromFile(path)` | file path | `error` | Load the lookup table from a custom file |
+| `GetWinType(string)` | comma-separated cards | `int` | Hand type constant (see Hand Rankings) |
+| `GetWinPosition(string)` | comma-separated cards | `int` | Global rank (higher = stronger) |
+| `GetMax(string)` | comma-separated cards | `int` | Encoded key of the best resolved hand |
+| `Compare(a, b string)` | two hands | `int` | Positive/zero/negative comparison result |
+| `KeyToStr(int)` | encoded key | `string` | Human-readable card string |
+
+The `...ByCards` variants (`GetWinTypeByCards`, `GetWinPositionByCards`, `GetMaxByCards`, `CompareByCards`) accept parsed `[]byte` card slices instead of strings; `GetKeyDataByCards` / `GetKeyDataByKey` return a `*KeyData` with `Position`, `Type` and `Max` fields. `CompareCards` / `MaxCards` / `GetCardTypeUnordered` operate on `[]Poke` directly, mirroring `TeenPattiCardUtil`.
 
 ---
 
@@ -174,7 +245,7 @@ The deck contains **55 cards** (52 regular + 3 Jokers). All C(55, 3) = **26,235 
 
 ### Step 3 — Multi-threaded quicksort
 
-All combination keys are sorted by hand strength using a **parallel quicksort** (`Sorter.java`). The thread pool size equals the number of available CPU cores. When the number of active threads exceeds `2 × CPU_CORES`, sub-partitions fall back to in-thread recursion to avoid thread explosion.
+All combination keys are sorted by hand strength using a **parallel quicksort** (`Sorter.java` / `sorter.go`). The thread pool size equals the number of available CPU cores. When the number of active threads exceeds `2 × CPU_CORES`, sub-partitions fall back to in-thread recursion to avoid thread explosion.
 
 The comparison function (`GenUtil.compare`) resolves Jokers to their best possible substitution before comparing, so the sort order reflects the true game outcome.
 
@@ -201,10 +272,14 @@ input string  →  parse cards  →  sort bytes  →  encode key  →  HashMap.g
 Run `TeenPattiAlgorithmUtil.main()` (or `GenUtil.genKey()` + `GenUtil.outputData()`) to regenerate `teenpatti_data.txt`. This is only needed if you modify the deck or ranking rules.
 
 ```bash
-mvn exec:java -Dexec.mainClass="com.github.esrrhs.teenpatti_algorithm.TeenPattiAlgorithmUtil"
+# Java
+cd java && mvn exec:java -Dexec.mainClass="com.github.esrrhs.teenpatti_algorithm.TeenPattiAlgorithmUtil"
+
+# Go (writes teenpatti_data.txt into the working directory)
+cd go && go run ./cmd/teenpatti_gen
 ```
 
-The generation process prints progress with estimated time remaining and throughput (entries/sec).
+The generation process prints progress with estimated time remaining and throughput (entries/sec). The Go implementation reproduces the Java-generated table byte-for-byte.
 
 ---
 
