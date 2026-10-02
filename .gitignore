@@ -31,3 +31,6 @@ Thumbs.db
 *.test
 *.out
 go/teenpatti_gen
+
+# C++
+cpp/build/

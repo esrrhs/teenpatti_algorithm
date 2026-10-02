@@ -5,8 +5,9 @@
 [<img src="https://img.shields.io/maven-central/v/com.github.esrrhs/teenpatti_algorithm">](https://central.sonatype.com/artifact/com.github.esrrhs/teenpatti_algorithm)
 [<img src="https://img.shields.io/github/actions/workflow/status/esrrhs/teenpatti_algorithm/maven.yml?branch=master">](https://github.com/esrrhs/teenpatti_algorithm/actions)
 [<img src="https://img.shields.io/github/actions/workflow/status/esrrhs/teenpatti_algorithm/go.yml?branch=master">](https://github.com/esrrhs/teenpatti_algorithm/actions)
+[<img src="https://img.shields.io/github/actions/workflow/status/esrrhs/teenpatti_algorithm/cpp.yml?branch=master">](https://github.com/esrrhs/teenpatti_algorithm/actions)
 
-基于**查表法**的高性能印度炸金花算法，完整支持**鬼牌（万能牌）**。给定任意3张手牌，库可立即返回牌型、强度排名以及鬼牌展开后的最优组合。提供 **Java** 和 **Go** 两个实现，行为完全一致。
+基于**查表法**的高性能印度炸金花算法，完整支持**鬼牌（万能牌）**。给定任意3张手牌，库可立即返回牌型、强度排名以及鬼牌展开后的最优组合。提供 **Java**、**Go** 和 **C++** 三个实现，行为完全一致。
 
 算法由 [texas_algorithm](https://github.com/esrrhs/texas_algorithm) 修改而来。
 
@@ -18,10 +19,11 @@
 teenpatti_algorithm/
 ├── java/     # Java 实现（发布到 Maven Central）
 ├── go/       # Go 实现（go:embed 内嵌查表数据，与 Java 生成的数据字节级一致）
-└── .github/  # CI：Java CI（maven.yml）、Go CI（go.yml）、发布（publish.yml）
+├── cpp/      # C++17 实现（CMake 构建，.incbin 内嵌查表数据）
+└── .github/  # CI：Java CI（maven.yml）、Go CI（go.yml）、C++ CI（cpp.yml）、发布（publish.yml）
 ```
 
-两个实现共用同一份 `teenpatti_data.txt` 查表数据，并通过同一套单元测试；Go 的生成流水线可逐字节复现该数据文件。
+三个实现共用同一份 `teenpatti_data.txt` 查表数据，并通过同一套单元测试；Go 和 C++ 的生成流水线可逐字节复现该数据文件。
 
 ---
 
@@ -119,6 +121,38 @@ func main() {
 }
 ```
 
+### C++（CMake）
+
+```bash
+cmake -S cpp -B cpp/build -DCMAKE_BUILD_TYPE=Release
+cmake --build cpp/build
+```
+
+### 基本用法（C++）
+
+```cpp
+#include <teenpatti/teenpatti.hpp>
+
+// 1. 启动时加载一次内嵌的查表数据
+if (!teenpatti::load()) {
+  return 1;
+}
+
+// 2. 获取牌型（返回 CardType 常量，见"牌型大小"章节）
+int type = teenpatti::get_win_type("黑A,方A,鬼");
+// type == 6  → 三条（鬼牌充当第三张A）
+
+// 3. 获取排名（数值越大越强）
+int position = teenpatti::get_win_position("黑2,黑3,黑4");
+
+// 4. 比较两副牌（正数=第一副赢，负数=第二副赢，0=平局）
+int result = teenpatti::compare("黑A,方A,鬼", "黑A,鬼,方3");
+
+// 5. 获取鬼牌展开后的最优组合
+int maxKey = teenpatti::get_max("黑A,方A,鬼");
+std::string maxStr = teenpatti::key_to_str(maxKey);  // 例如 "方A方A梅A"
+```
+
 ---
 
 ## API 说明
@@ -160,6 +194,22 @@ func main() {
 | `KeyToStr(int)` | 编码 key | `string` | 可读牌面字符串 |
 
 另有 `...ByCards` 系列函数（`GetWinTypeByCards`、`GetWinPositionByCards`、`GetMaxByCards`、`CompareByCards`）接受解析好的 `[]byte` 牌面切片；`GetKeyDataByCards` / `GetKeyDataByKey` 返回带 `Position`、`Type`、`Max` 字段的 `*KeyData`。`CompareCards` / `MaxCards` / `GetCardTypeUnordered` 直接操作 `[]Poke`，对应 Java 的 `TeenPattiCardUtil`。
+
+### C++ API
+
+所有函数位于 `teenpatti` 命名空间（头文件 `<teenpatti/teenpatti.hpp>`，CMake 库目标 `teenpatti`）。
+
+| 函数 | 返回值 | 说明 |
+|------|--------|------|
+| `load()` | `bool` | 加载内嵌的 `teenpatti_data.txt`（启动时调用一次） |
+| `load_from_file(path)` / `load_from_stream(in)` | `bool` | 从自定义文件/流加载查表数据 |
+| `get_win_type(cards)` | `int` | 牌型常量（见牌型大小） |
+| `get_win_position(cards)` | `int` | 全局排名（数值越大越强） |
+| `get_max(cards)` | `int` | 最优组合的编码 key |
+| `compare(a, b)` | `int` | 正/零/负比较结果 |
+| `key_to_str(key)` | `std::string` | 可读牌面字符串 |
+
+`cards` 参数支持重载：`std::string`（`"黑A,方A,鬼"`）、`std::vector<std::uint8_t>`（打包的字节牌面）或 `int`（编码 key）。`get_key_data(cards)` 返回带 `position`、`type`、`max` 字段的 `std::optional<KeyData>`；`compare_cards` / `max_cards` / `get_card_type_unordered` 直接操作 `std::vector<Poke>`，对应 Java 的 `TeenPattiCardUtil`。
 
 ---
 
@@ -275,9 +325,12 @@ cd java && mvn exec:java -Dexec.mainClass="com.github.esrrhs.teenpatti_algorithm
 
 # Go（在当前工作目录生成 teenpatti_data.txt）
 cd go && go run ./cmd/teenpatti_gen
+
+# C++（在当前工作目录生成 teenpatti_data.txt）
+cmake --build cpp/build --target teenpatti_gen && cpp/build/teenpatti_gen
 ```
 
-生成过程会输出进度、预计剩余时间和处理速度（条/秒）。Go 实现可逐字节复现 Java 生成的数据文件。
+生成过程会输出进度、预计剩余时间和处理速度（条/秒）。Go 和 C++ 实现可逐字节复现 Java 生成的数据文件。
 
 ---
 

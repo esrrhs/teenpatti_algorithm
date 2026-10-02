@@ -5,10 +5,11 @@
 [<img src="https://img.shields.io/maven-central/v/com.github.esrrhs/teenpatti_algorithm">](https://central.sonatype.com/artifact/com.github.esrrhs/teenpatti_algorithm)
 [<img src="https://img.shields.io/github/actions/workflow/status/esrrhs/teenpatti_algorithm/maven.yml?branch=master">](https://github.com/esrrhs/teenpatti_algorithm/actions)
 [<img src="https://img.shields.io/github/actions/workflow/status/esrrhs/teenpatti_algorithm/go.yml?branch=master">](https://github.com/esrrhs/teenpatti_algorithm/actions)
+[<img src="https://img.shields.io/github/actions/workflow/status/esrrhs/teenpatti_algorithm/cpp.yml?branch=master">](https://github.com/esrrhs/teenpatti_algorithm/actions)
 
 [中文文档](README_CN.md)
 
-A high-performance lookup-table algorithm for the Indian card game **Teen Patti**, with full support for **Joker (wild card)**. Given any 3-card hand, the library instantly returns the hand's rank, type, and best possible combination. Available for **Java** and **Go**, with identical behavior.
+A high-performance lookup-table algorithm for the Indian card game **Teen Patti**, with full support for **Joker (wild card)**. Given any 3-card hand, the library instantly returns the hand's rank, type, and best possible combination. Available for **Java**, **Go** and **C++**, with identical behavior.
 
 Derived from [texas_algorithm](https://github.com/esrrhs/texas_algorithm).
 
@@ -20,10 +21,11 @@ Derived from [texas_algorithm](https://github.com/esrrhs/texas_algorithm).
 teenpatti_algorithm/
 ├── java/     # Java implementation (published to Maven Central)
 ├── go/       # Go implementation (go:embed based, byte-identical lookup table)
-└── .github/  # CI: Java CI (maven.yml), Go CI (go.yml), publishing (publish.yml)
+├── cpp/      # C++17 implementation (CMake, data embedded via .incbin)
+└── .github/  # CI: Java CI (maven.yml), Go CI (go.yml), C++ CI (cpp.yml), publishing (publish.yml)
 ```
 
-Both implementations share the same `teenpatti_data.txt` lookup table and pass the same set of unit tests; the Go generation pipeline reproduces the table byte-for-byte.
+All three implementations share the same `teenpatti_data.txt` lookup table and pass the same set of unit tests; the Go and C++ generation pipelines reproduce the table byte-for-byte.
 
 ---
 
@@ -121,6 +123,38 @@ func main() {
 }
 ```
 
+### C++ (CMake)
+
+```bash
+cmake -S cpp -B cpp/build -DCMAKE_BUILD_TYPE=Release
+cmake --build cpp/build
+```
+
+### Basic usage (C++)
+
+```cpp
+#include <teenpatti/teenpatti.hpp>
+
+// 1. Load the embedded lookup table once at startup
+if (!teenpatti::load()) {
+  return 1;
+}
+
+// 2. Get the hand type (returns a CardType constant, see Hand Rankings)
+int type = teenpatti::get_win_type("黑A,方A,鬼");
+// type == 6  → Three of a Kind (Joker acts as a third Ace)
+
+// 3. Get the rank position (higher = stronger hand)
+int position = teenpatti::get_win_position("黑2,黑3,黑4");
+
+// 4. Compare two hands (positive = first hand wins, negative = second wins, 0 = tie)
+int result = teenpatti::compare("黑A,方A,鬼", "黑A,鬼,方3");
+
+// 5. Get the best resolved hand (Joker expanded to its optimal card)
+int maxKey = teenpatti::get_max("黑A,方A,鬼");
+std::string maxStr = teenpatti::key_to_str(maxKey);  // e.g. "方A方A梅A"
+```
+
 ---
 
 ## API Reference
@@ -162,6 +196,22 @@ All functions live in package `teenpatti` (`github.com/esrrhs/teenpatti_algorith
 | `KeyToStr(int)` | encoded key | `string` | Human-readable card string |
 
 The `...ByCards` variants (`GetWinTypeByCards`, `GetWinPositionByCards`, `GetMaxByCards`, `CompareByCards`) accept parsed `[]byte` card slices instead of strings; `GetKeyDataByCards` / `GetKeyDataByKey` return a `*KeyData` with `Position`, `Type` and `Max` fields. `CompareCards` / `MaxCards` / `GetCardTypeUnordered` operate on `[]Poke` directly, mirroring `TeenPattiCardUtil`.
+
+### C++ API
+
+All functions live in namespace `teenpatti` (header `<teenpatti/teenpatti.hpp>`, library target `teenpatti`).
+
+| Function | Return | Description |
+|----------|--------|-------------|
+| `load()` | `bool` | Load the embedded `teenpatti_data.txt` (call once at startup) |
+| `load_from_file(path)` / `load_from_stream(in)` | `bool` | Load the lookup table from a custom file/stream |
+| `get_win_type(cards)` | `int` | Hand type constant (see Hand Rankings) |
+| `get_win_position(cards)` | `int` | Global rank (higher = stronger) |
+| `get_max(cards)` | `int` | Encoded key of the best resolved hand |
+| `compare(a, b)` | `int` | Positive/zero/negative comparison result |
+| `key_to_str(key)` | `std::string` | Human-readable card string |
+
+The `cards` parameter is overloaded: `std::string` (`"黑A,方A,鬼"`), `std::vector<std::uint8_t>` (packed card bytes) or `int` (encoded key). `get_key_data(cards)` returns a `std::optional<KeyData>` with `position`, `type` and `max`; `compare_cards` / `max_cards` / `get_card_type_unordered` operate on `std::vector<Poke>` directly, mirroring `TeenPattiCardUtil`.
 
 ---
 
@@ -277,9 +327,12 @@ cd java && mvn exec:java -Dexec.mainClass="com.github.esrrhs.teenpatti_algorithm
 
 # Go (writes teenpatti_data.txt into the working directory)
 cd go && go run ./cmd/teenpatti_gen
+
+# C++ (writes teenpatti_data.txt into the working directory)
+cmake --build cpp/build --target teenpatti_gen && cpp/build/teenpatti_gen
 ```
 
-The generation process prints progress with estimated time remaining and throughput (entries/sec). The Go implementation reproduces the Java-generated table byte-for-byte.
+The generation process prints progress with estimated time remaining and throughput (entries/sec). The Go and C++ implementations reproduce the Java-generated table byte-for-byte.
 
 ---
 
