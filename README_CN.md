@@ -29,6 +29,7 @@ teenpatti_algorithm/
 
 ## 目录
 
+- [目录结构](#目录结构)
 - [游戏规则简介](#游戏规则简介)
 - [快速开始](#快速开始)
 - [API 说明](#api-说明)
@@ -77,7 +78,7 @@ int result = TeenPattiAlgorithmUtil.compare("黑A,方A,鬼", "黑A,鬼,方3");
 
 // 5. 获取鬼牌展开后的最优组合
 int maxKey = TeenPattiAlgorithmUtil.getMax("黑A,方A,鬼");
-String maxStr = TeenPattiAlgorithmUtil.keyToStr(maxKey);  // 例如 "黑A方A红A"
+String maxStr = TeenPattiAlgorithmUtil.keyToStr(maxKey);  // 例如 "方A黑A梅A"（三条A）
 ```
 
 ### Go 模块
@@ -150,7 +151,7 @@ int result = teenpatti::compare("黑A,方A,鬼", "黑A,鬼,方3");
 
 // 5. 获取鬼牌展开后的最优组合
 int maxKey = teenpatti::get_max("黑A,方A,鬼");
-std::string maxStr = teenpatti::key_to_str(maxKey);  // 例如 "方A方A梅A"
+std::string maxStr = teenpatti::key_to_str(maxKey);  // 例如 "方A黑A梅A"（三条A）
 ```
 
 ---
@@ -293,7 +294,7 @@ key = 牌1字节 * 10000 + 牌2字节 * 100 + 牌3字节
 
 ### 第三步 — 多线程快速排序
 
-所有组合 key 按牌力大小进行**并行快速排序**（`Sorter.java` / `sorter.go`），线程池大小等于 CPU 核心数。当活跃线程数超过 `2 × CPU核心数` 时，子分区退回单线程递归，防止线程爆炸。
+所有组合 key 按牌力大小进行**并行快速排序**（`Sorter.java` / `sorter.go` / `teenpatti.cpp`），线程池大小等于 CPU 核心数。当活跃线程数超过 `2 × CPU核心数` 时，子分区退回单线程递归，防止线程爆炸。
 
 比较函数（`GenUtil.compare`）在比较前先将鬼牌展开为最优替代牌，确保排序结果反映真实游戏结果。
 
@@ -350,6 +351,34 @@ System.out.println(TeenPattiAlgorithmUtil.keyToStr(
         TeenPattiAlgorithmUtil.getMax(cards)));                      // 最优展开结果
 
 System.out.println(TeenPattiAlgorithmUtil.compare(cards, cards1));  // > 0: cards 赢
+```
+
+Go 版同样的示例：
+
+```go
+teenpatti.Load()
+
+cards := "黑A,方A,鬼"  // A♠ A♦ 鬼  → 三条（三张A）
+cards1 := "黑A,鬼,方3" // A♠ 鬼 3♦  → 对子（一对A）
+
+fmt.Println(teenpatti.GetWinPosition(cards))             // 排名
+fmt.Println(teenpatti.GetWinType(cards))                 // 6 = 三条
+fmt.Println(teenpatti.KeyToStr(teenpatti.GetMax(cards))) // 最优展开结果
+fmt.Println(teenpatti.Compare(cards, cards1))            // > 0: cards 赢
+```
+
+C++ 版同样的示例：
+
+```cpp
+teenpatti::load();
+
+std::string cards = "黑A,方A,鬼";   // A♠ A♦ 鬼  → 三条（三张A）
+std::string cards1 = "黑A,鬼,方3";  // A♠ 鬼 3♦  → 对子（一对A）
+
+std::cout << teenpatti::get_win_position(cards) << "\n";               // 排名
+std::cout << teenpatti::get_win_type(cards) << "\n";                   // 6 = 三条
+std::cout << teenpatti::key_to_str(teenpatti::get_max(cards)) << "\n"; // 最优展开结果
+std::cout << teenpatti::compare(cards, cards1) << "\n";                // > 0: cards 赢
 ```
 
 ---

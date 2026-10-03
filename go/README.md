@@ -30,7 +30,7 @@ func main() {
 	typ := teenpatti.GetWinType("黑A,方A,鬼")                    // 6 = Three of a Kind
 	position := teenpatti.GetWinPosition("黑A,方A,鬼")            // global rank, higher = stronger
 	maxKey := teenpatti.GetMax("黑A,方A,鬼")                     // best resolved hand (Joker expanded)
-	maxStr := teenpatti.KeyToStr(maxKey)                        // readable form, e.g. "方A方A梅A"
+	maxStr := teenpatti.KeyToStr(maxKey)                        // readable form, e.g. "方A黑A梅A"
 	result := teenpatti.Compare("黑A,方A,鬼", "黑A,鬼,方3")       // > 0: first hand wins
 
 	fmt.Println(typ, position, maxKey, maxStr, result)

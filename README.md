@@ -31,6 +31,7 @@ All three implementations share the same `teenpatti_data.txt` lookup table and p
 
 ## Table of Contents
 
+- [Project Structure](#project-structure)
 - [Game Rules Overview](#game-rules-overview)
 - [Quick Start](#quick-start)
 - [API Reference](#api-reference)
@@ -79,7 +80,7 @@ int result = TeenPattiAlgorithmUtil.compare("黑A,方A,鬼", "黑A,鬼,方3");
 
 // 5. Get the best resolved hand (Joker expanded to its optimal card)
 int maxKey = TeenPattiAlgorithmUtil.getMax("黑A,方A,鬼");
-String maxStr = TeenPattiAlgorithmUtil.keyToStr(maxKey);  // e.g. "黑A方A红A"
+String maxStr = TeenPattiAlgorithmUtil.keyToStr(maxKey);  // e.g. "方A黑A梅A" (three Aces)
 ```
 
 ### Go module
@@ -152,7 +153,7 @@ int result = teenpatti::compare("黑A,方A,鬼", "黑A,鬼,方3");
 
 // 5. Get the best resolved hand (Joker expanded to its optimal card)
 int maxKey = teenpatti::get_max("黑A,方A,鬼");
-std::string maxStr = teenpatti::key_to_str(maxKey);  // e.g. "方A方A梅A"
+std::string maxStr = teenpatti::key_to_str(maxKey);  // e.g. "方A黑A梅A" (three Aces)
 ```
 
 ---
@@ -295,7 +296,7 @@ The deck contains **55 cards** (52 regular + 3 Jokers). All C(55, 3) = **26,235 
 
 ### Step 3 — Multi-threaded quicksort
 
-All combination keys are sorted by hand strength using a **parallel quicksort** (`Sorter.java` / `sorter.go`). The thread pool size equals the number of available CPU cores. When the number of active threads exceeds `2 × CPU_CORES`, sub-partitions fall back to in-thread recursion to avoid thread explosion.
+All combination keys are sorted by hand strength using a **parallel quicksort** (`Sorter.java` / `sorter.go` / `teenpatti.cpp`). The thread pool size equals the number of available CPU cores. When the number of active threads exceeds `2 × CPU_CORES`, sub-partitions fall back to in-thread recursion to avoid thread explosion.
 
 The comparison function (`GenUtil.compare`) resolves Jokers to their best possible substitution before comparing, so the sort order reflects the true game outcome.
 
@@ -352,6 +353,34 @@ System.out.println(TeenPattiAlgorithmUtil.keyToStr(
         TeenPattiAlgorithmUtil.getMax(cards)));                      // best resolved hand
 
 System.out.println(TeenPattiAlgorithmUtil.compare(cards, cards1));  // > 0: cards wins
+```
+
+The same demo in Go:
+
+```go
+teenpatti.Load()
+
+cards := "黑A,方A,鬼"  // A♠ A♦ Joker  → Three Aces
+cards1 := "黑A,鬼,方3" // A♠ Joker 3♦ → Pair of Aces
+
+fmt.Println(teenpatti.GetWinPosition(cards))             // rank
+fmt.Println(teenpatti.GetWinType(cards))                 // 6 = Three of a Kind
+fmt.Println(teenpatti.KeyToStr(teenpatti.GetMax(cards))) // best resolved hand
+fmt.Println(teenpatti.Compare(cards, cards1))            // > 0: cards wins
+```
+
+And in C++:
+
+```cpp
+teenpatti::load();
+
+std::string cards = "黑A,方A,鬼";   // A♠ A♦ Joker  → Three Aces
+std::string cards1 = "黑A,鬼,方3";  // A♠ Joker 3♦ → Pair of Aces
+
+std::cout << teenpatti::get_win_position(cards) << "\n";              // rank
+std::cout << teenpatti::get_win_type(cards) << "\n";                  // 6 = Three of a Kind
+std::cout << teenpatti::key_to_str(teenpatti::get_max(cards)) << "\n"; // best resolved hand
+std::cout << teenpatti::compare(cards, cards1) << "\n";               // > 0: cards wins
 ```
 
 ---

@@ -30,7 +30,7 @@ int main() {
   int type = teenpatti::get_win_type("黑A,方A,鬼");      // 6 = Three of a Kind
   int position = teenpatti::get_win_position("黑A,方A,鬼");  // global rank, higher = stronger
   int max_key = teenpatti::get_max("黑A,方A,鬼");        // best resolved hand (Joker expanded)
-  std::string max_str = teenpatti::key_to_str(max_key);   // readable form, e.g. "方A方A梅A"
+  std::string max_str = teenpatti::key_to_str(max_key);   // readable form, e.g. "方A黑A梅A"
   int result = teenpatti::compare("黑A,方A,鬼", "黑A,鬼,方3");  // > 0: first hand wins
 
   std::cout << type << " " << position << " " << max_key << " " << max_str << " " << result << "\n";
